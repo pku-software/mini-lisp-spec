@@ -29,9 +29,22 @@ const STYLES = [
 
 const src = await readFile(SRC_PATH, "utf-8");
 let dest = md.render(src, {});
-dest = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${TITLE}</title>${STYLES.map(
+dest = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${TITLE}</title>
+    ${STYLES.map(
   (s) => `<link rel="stylesheet" href="${s}">`
-).join("")}</head><body><div id="container">${dest}</div></body></html>`;
+).join("")}
+</head>
+<body>
+    <div id="container">
+    ${dest}
+    </div>
+</body>
+</html>`;
 
 await mkdir(path.dirname(DEST_PATH), { recursive: true });
 await writeFile(DEST_PATH, dest, "utf-8");

@@ -2,7 +2,7 @@
 
 <div style="display: flex; justify-content: center">
 
-> **版本 20230221** [谷雨同学](https://guyutongxue.site)制订
+> **版本 20230222** [谷雨同学](https://guyutongxue.site)制订
 
 </div>
 
@@ -197,18 +197,18 @@ Mini-Lisp 具有如下数据类型：
 
 本文档提及某数类型数据的外部表示时，实现可选用任何求值为 *相同* 数据的数型字面量作为其外部表示。不推荐实现将整数数据的外部表示记为带有 `.` 的数型字面量。
 
-字符串类型数据的外部表示为一对双引号 `"` 引起的字符序列，称为 *字符串字面量*。双引号内部允许出现任意数量的 *非转义字符* 和 *转义字符序列*。双引号内部的字符数量上限是实现定义的。
+字符串类型数据的外部表示为一对双引号 `"` 引起的字符序列，称为 *字符串字面量*。双引号内部允许出现任意数量的 *非转义字符* 和 *转义字符序列*。双引号内部的字符数量上限是实现定义的，但禁止超过实现定义的字符串字符数量上限。
 
 *非转义字符* 指除双引号 `"` 和反斜杠（`\`，Unicode 码位 U+0060）的 Unicode 字符。*转义字符序列* 指由反斜杠 `\` 与下列 *转义说明符* 构成的双字符序列：
 
-| 转义说明符 | 含义 |
+| 转义说明符 | 指示字符 |
 |---|---|
 | `t` | 制表符（Unicode 码位 U+0009）|
 | `n` | 换行符（Unicode 码位 U+000A）|
 | `\` | 反斜杠（Unicode 码位 U+0060）|
 | `"` | 双引号（Unicode 码位 U+0022）|
 
-实现可以定义其它转义说明符。
+字符串字面量所表示的字符串的字符，由字面量中非转义字符或转义字符序列所 *指示* 的字符，按原有顺序排列构成。非转义字符指示其自身，转义字符序列指示的字符参照上表。实现可以定义其它转义说明符。
 
 符号类型数据的外部表示即为代表该符号的标识符。
 
@@ -238,13 +238,13 @@ Mini-Lisp 程序由若干 *表达式* 构成。*表达式* 是由一系列语法
 
 <space-between>
 
-$\lang$ 变量 $\rang$
+$\lang$ 标识符 $\rang$
 
 语法
 
 </space-between>
 
-表达式中出现的变量即 *变量引用*。对 *变量引用* 求值的结果，是在当前环境下其所绑定的值。如果该变量的标识符没有绑定，则发出错误信号。错误信号中，应当包含该标识符。
+表达式中出现的标识符即 *变量引用*。对 *变量引用* 求值的结果，是在当前环境下其所绑定的值。如果该标识符没有绑定，则发出错误信号。错误信号中，应当包含该标识符。
 
 > 例如：
 > ```scheme
@@ -381,7 +381,7 @@ $\lang$ 初始值 $\rang$ 是表达式；$\lang$ 形参 $\rang$ 是一系列标�
 
 变量定义除上述副作用外，使用其求值结果是未定义行为。实现可以将求值结果设置为指代该变量名的符号。
 
-变量定义可以出现在过程体的开头，或者 *顶层* 的任意位置。其它位置出现的变量定义是未定义行为。
+变量定义可以出现在过程体的开头，或者作为 *顶层表达式*。其它位置出现的变量定义是未定义行为。
 
 ### 派生表达式
 
@@ -511,7 +511,9 @@ $\lang$ qqTemplate $\rang$ 是可以额外插入 `unquote` 特殊形式的表达
 
 ## 程序结构与解释流程
 
-Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp 程序引发未定义行为。实现应当通过若干操作系统提供的 IO 接口，与操作系统交互并引发可观察副作用。操作系统应当提供输入接口 *标准输入*、输出接口 *标准输出* 和输出接口 *标准错误*。
+Mini-Lisp 程序由若干表达式组成，这些表达式不为任何其它表达式的子表达式，称之为 *顶层表达式*。不含任何表达式的 Mini-Lisp 程序引发未定义行为。
+
+实现应当通过若干操作系统提供的 IO 接口，与操作系统交互并引发可观察副作用。操作系统应当提供输入接口 *标准输入*、输出接口 *标准输出* 和输出接口 *标准错误*。IO 接口传输的内容中，出现基本拉丁区（Unicode 码位 U+0000 至 U+007F）以外的 Unicode 字符时，行为是实现定义的。
 
 实现可以 *执行* Mini-Lisp 程序。应当提供两种执行模式：REPL 模式和文件模式。
 
@@ -611,8 +613,6 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 字符串类型数据的存储形式（内存管理及编码方式）是实现定义的。
 
-对于基本拉丁区且非控制字符（Unicode 码位 U+0020 至 U+007E）以外的 Unicode 字符的输出行为是实现定义的。
-
 ### 符号类型
 
 符号类型是指代标识符的类型。当字面表达式（`quote` 形式）作用到标识符上时，得到指代该标识符的符号类型数据。
@@ -658,6 +658,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 ## 库
 
+以下过程定义中，若实参不符合形参名隐含期望的实参类型，实现应当发出错误信号。
+
 ### 核心库
 
 <space-between>
@@ -669,6 +671,10 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 </space-between>
 
 调用 *proc*，并将 *list* 的元素作为调用的实参。返回值：如是调用 *proc* 得到的返回值。
+
+```scheme
+(apply + '(1 2 3)) ⇒ 6
+```
 
 <space-between>
 
@@ -717,6 +723,10 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 将 *expr* 作为 Mini-Lisp 程序表达式，对其进行求值。返回值：求值结果。
 
+```scheme
+(eval '(cons 1 (cons 2 nil))) ⇒ '(1 2)
+```
+
 <space-between>
 
 `(` `exit` `)`
@@ -764,6 +774,10 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *arg* 为布尔类型、数类型、字符串类型或空表类型的值，则返回 `#t`；否则返回 `#f`。
+
+> 注：`(` `atom?` *arg* `)` 求值为 `#t` ，等价于 *arg* 为空表或者 `'` *arg* 恒等于 *arg*。
+
 <space-between>
 
 `(` `boolean?` *arg* `)`
@@ -771,6 +785,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 *arg* 为布尔类型的值，则返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -780,6 +796,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *arg* 为数类型的值且 *arg* 是整数，则返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `list?` *arg* `)`
@@ -787,6 +805,14 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 *arg* 为列表，则返回 `#t`；否则返回 `#f`。
+
+```scheme
+(list? '())      ⇒ #t
+(list? '(1 2 3)) ⇒ #t
+(list? '(1 . 2)) ⇒ #f
+```
 
 <space-between>
 
@@ -796,6 +822,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *arg* 为数类型的值，则返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `null?` *arg* `)`
@@ -803,6 +831,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 *arg* 为空表，则返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -812,6 +842,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *arg* 为对子类型的值，则返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `procedure?` *arg* `)`
@@ -819,6 +851,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 *arg* 为过程类型的值，则返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -828,6 +862,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *arg* 为字符串类型的值，则返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -836,6 +871,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 *arg* 为符号类型的值，则返回 `#t`；否则返回 `#f`。
 
 ### 对子与列表操作库
 
@@ -847,7 +884,11 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+将 *list* 内的元素按顺序拼接为一个新的列表。返回值：拼接后的列表；实参个数为零时返回空表。
 
+```scheme
+(append '(1 2 3) '(a b c) '(foo bar baz)) ⇒ '(1 2 3 a b c foo bar baz)
+```
 
 <space-between>
 
@@ -857,7 +898,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
-
+返回值： *pair* 的左半部分。
 
 <space-between>
 
@@ -867,6 +908,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：*pair* 的右半部分。
 
 <space-between>
 
@@ -876,6 +918,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：以 *first* 为左半部分，*rest* 为右半部分的对子类型数据。
 
 <space-between>
 
@@ -885,6 +928,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：非负整数，*list* 的元素个数。
 
 <space-between>
 
@@ -894,6 +938,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+从 *item* 构建一个新的列表。返回值：新构建的列表。
+
 <space-between>
 
 `(` `map` *proc* *list* `)`
@@ -902,6 +948,13 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+*proc* 应能接受一个实参。返回值：一个新列表，其中的每个元素都是 *list* 中对应位置元素被 *proc* 作用后的结果。
+
+```scheme
+(map - '(1 2 3)) ⇒ '(-1 -2 -3)
+```
+
+实现可以扩展这一过程，如允许 *proc* 接受多个实参，作用在多个 *list* 的对应位置元素上。
 
 <space-between>
 
@@ -911,6 +964,11 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+*proc* 应能接受一个实参。返回值：一个新列表，其中包含 *list* 中被 *proc* 作用后得到非虚值的元素，按原有顺序排列。
+
+```scheme
+(filter odd? '(1 2 3 4)) ⇒ '(1 3)
+```
 
 <space-between>
 
@@ -919,6 +977,12 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+*proc* 应当接受两个实参。*list* 不能为空表。返回值：若 `(` `length` *list* `)` 求值为 1，则返回 `(` `car` *list* `)`；否则返回 `(` *proc* `(` `car` *list* `)` `(` `reduce` *proc* `(` `cdr` *list* `)` `)` `)`。
+
+```scheme
+(map * '(1 2 3 4)) ⇒ 24
+```
 
 ### 算术运算库
 
@@ -930,6 +994,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：所有 *x* 的和。
 
 <space-between>
 
@@ -946,6 +1012,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+*x* 缺省为 0。返回值：$x - y$。
+
 <space-between>
 
 `(` `*` *x*<sub>1</sub> ... `)`
@@ -953,6 +1021,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：所有 *x* 的积。
 
 <space-between>
 
@@ -969,6 +1039,12 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+*x* 缺省为 1。返回值：$\dfrac x y$。若 $y = 0$ 时，行为未定义。建议发出错误信号。
+
+```scheme
+(/ 4)    ⇒ 0.25
+(/ 7 2)  ⇒ 3.5
+```
 
 <space-between>
 
@@ -978,6 +1054,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：$|x|$。
+
 <space-between>
 
 `(` `expt` *x* *y* `)`
@@ -986,13 +1064,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
-<space-between>
-
-`(` `modulo` *x* *y* `)`
-
-过程
-
-</space-between>
+返回值：$x^y$。若 $x = 0 \wedge y = 0$，行为未定义。
 
 <space-between>
 
@@ -1002,6 +1074,25 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：$\left[\dfrac xy\right]$；向零取整函数 $[x]$ 定义为 $\begin{cases}\lfloor x\rfloor,&x\geqslant0\\\lceil x\rceil,&x<0\end{cases}$。
+
+<space-between>
+
+`(` `modulo` *x* *y* `)`
+
+过程
+
+</space-between>
+
+返回值：与 *y* 具有相同正负性的值 $q$，满足 $0\leqslant|q|<|y|$ 且 $y$ 整除 $|q-x|$。
+
+```scheme
+(modulo  10  3)  ⇒  1
+(modulo -10  3)  ⇒  2
+(modulo  10 -3)  ⇒ -2
+(modulo -10 -3)  ⇒ -1
+```
+
 <space-between>
 
 `(` `remainder` *x* *y* `)`
@@ -1009,6 +1100,15 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：与 *x* 具有相同正负性的值 $q$，满足 $0\leqslant|q|<|y|$ 且 $q + y\cdot\left[\dfrac xy\right] = x$。
+
+```scheme
+(remainder  10  3)  ⇒  1
+(remainder -10  3)  ⇒ -1
+(remainder  10 -3)  ⇒  1
+(remainder -10 -3)  ⇒ -1
+```
 
 ### 比较库
 
@@ -1021,6 +1121,14 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *a* 和 *b* 具有数据恒等性，则返回 `#t`；否则返回 `#f`。
+
+```scheme
+(eq? '(1 2 3) '(1 2 3)) ⇒ #f
+(define x '(1 2 3))
+(eq? x x)               ⇒ #t
+```
+
 <space-between>
 
 `(` `equal?` *a* *b* `)`
@@ -1029,6 +1137,11 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *a* 和 *b* 具有数据相等性，则返回 `#t`；否则返回 `#f`。
+
+```scheme
+(eq? '(1 2 3) '(1 2 3)) ⇒ #t
+```
 
 <space-between>
 
@@ -1038,6 +1151,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 *val* 为虚值，则返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -1047,6 +1161,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 $x = y$，返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `<` *x* *y* `)`
@@ -1054,6 +1170,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 $x < y$，返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -1063,6 +1181,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 $x > y$，返回 `#t`；否则返回 `#f`。
 
 
 <space-between>
@@ -1073,6 +1192,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 $x \leqslant y$，返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `>=` *x* *y* `)`
@@ -1081,7 +1202,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
-
+返回值：若 $x \geqslant y$，返回 `#t`；否则返回 `#f`。
 
 <space-between>
 
@@ -1091,6 +1212,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 $2 \mid n$，返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `odd?` *n* `)`
@@ -1099,6 +1222,8 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 
 </space-between>
 
+返回值：若 $2 \nmid n$，返回 `#t`；否则返回 `#f`。
+
 <space-between>
 
 `(` `zero?` *x* `)`
@@ -1106,3 +1231,7 @@ Mini-Lisp 程序由若干表达式组成。不含任何表达式的 Mini-Lisp �
 过程
 
 </space-between>
+
+返回值：若 $x = 0$，返回 `#t`；否则返回 `#f`。
+
+> 注：若实现采用 IEEE 754 内存表示存储数类型数据，则 IEEE 754 `+0` 与 IEEE 754 `-0` 被 `zero?` 作用都应得到 `#t`。
