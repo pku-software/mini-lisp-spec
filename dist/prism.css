@@ -9,7 +9,7 @@ pre[class*="language-"] {
   color: black;
   background: none;
   text-shadow: 0 1px white;
-  font-family: var(--code-font);
+  font-family: var(--code-font), var(--ui-font), monospace;
   font-size: 1em;
   text-align: left;
   white-space: pre;

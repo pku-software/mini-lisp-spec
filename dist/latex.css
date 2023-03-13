@@ -42,7 +42,7 @@
   /* 代码字体（代码中的中文会调用 ui-font） */
   --code-font: "Latin Modern Mono", "Latin Modern Mono 10", "Courier New";
   /* 侧边栏字体 */
-  --ui-font: "Noto Sans SC";
+  --ui-font: "Noto Serif SC";
   /* source mode 字体 */
   /* 默认调用 code-font 和 ui-font */
   --sourceMode-font: "SF Mono", "Noto Sans SC";
@@ -117,6 +117,7 @@ body {
 
 a {
   text-decoration: none;
+  color: unset;
 }
 
 a:hover {
@@ -181,7 +182,7 @@ space-between p code {
 #container p {
   text-align: left;
 }
-#container a {
+#container p a {
   color: var(--link-color-light);
 }
 #container h1,

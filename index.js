@@ -2,6 +2,8 @@
 import markdown from "markdown-it";
 import { katex } from "@mdit/plugin-katex";
 import prism from "markdown-it-prism";
+import attrs from "markdown-it-attrs";
+import anchor from "markdown-it-anchor";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
@@ -12,8 +14,12 @@ const md = markdown({
   linkify: true,
   breaks: true,
 });
-md.use(katex);
-md.use(prism);
+md.use(katex)
+  .use(prism)
+  .use(attrs)
+  .use(anchor, {
+    permalink: anchor.permalink.headerLink()
+  });
 
 const SRC_PATH = "./README.md";
 const DEST_PATH = "./dist/index.html";
