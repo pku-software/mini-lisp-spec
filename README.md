@@ -730,7 +730,7 @@ Mini-Lisp 程序由若干表达式组成，这些表达式不为任何其它表�
 将 *expr* 作为 Mini-Lisp 程序表达式，对其进行求值。返回值：求值结果。
 
 ```scheme
-(eval '(cons 1 (cons 2 nil))) ⇒ '(1 2)
+(eval '(cons 1 (cons 2 '()))) ⇒ '(1 2)
 ```
 
 <space-between>
